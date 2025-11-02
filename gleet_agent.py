@@ -246,7 +246,7 @@ class GLEET(PPO_Agent):
         self.config.eps_clip = 0.1
         self.config.lr_model = 1e-4
         self.config.lr_decay = 0.9862327
-        self.config.max_grad_norm = 2
+        self.config.max_grad_norm = 5
 
         # figure out the actor network
         actor = Actor(

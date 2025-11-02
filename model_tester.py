@@ -22,7 +22,7 @@ config = {
         'NBNC': {
             'agent': 'GLEET',
             'optimizer': GLEET_Optimizer,
-            'model_load_path': r"agent_model\train\GLEET\20251031T201612_dynamic-problem_easy\checkpoint-20.pkl",
+            'model_load_path': r"agent_model\train\GLEET\20251102T125655_dynamic-problem_easy\checkpoint-0.pkl",
         },
 
         # Other baselines to compare

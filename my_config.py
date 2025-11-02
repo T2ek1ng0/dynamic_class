@@ -162,7 +162,7 @@ def get_config(args=None):
     parser.add_argument('--train_batch_size', type=int, default=1, help='batch size of train set')
     parser.add_argument('--agent_save_dir', type = str, default = 'agent_model/train/',
                         help = 'save your own trained agent model')
-    parser.add_argument('--n_checkpoint', type=int, default=20, help='number of training checkpoints')
+    parser.add_argument('--n_checkpoint', type=int, default=100, help='number of training checkpoints')
     parser.add_argument('--train_parallel_mode', type=str, default='subproc', choices=['dummy', 'subproc', 'ray'],
                         help='the parellel processing method for batch env step in training')
     parser.add_argument('--train_mode', default='single', type = str, choices = ['single', 'multi'],
