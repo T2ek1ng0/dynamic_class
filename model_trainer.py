@@ -8,7 +8,7 @@ from gleet_agent import GLEET
 config = {'train_problem': 'dynamic-problem',
           'train_batch_size': 8,  # 8
           'train_parallel_mode': 'dummy',  # dummy/subproc/ray/ray-subproc
-          'max_epoch': 20,  # 100
+          'max_epoch': 100,  # 100
           'train_mode': 'multi',  # multi/single
           }
 config = Config(config)

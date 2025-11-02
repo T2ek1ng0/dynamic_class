@@ -43,7 +43,7 @@ class Dynamic_Dataset(Dataset):
                      "Linear_Slope", "Attractive_Sector", "Step_Ellipsoidal", "Sharp_Ridge", "Rastrigin_F15",
                      "Schwefel", "Gallagher101", "Gallagher21"]
         func_idx = [i for i in range(32)]  # 0-31
-        my_noise = Gaussian_noise(begin_std=1.0, end_std=10.0)
+        my_noise = Gaussian_noise(begin_percent=0.01, end_percent=0.05)
         assert upperbound >= 5., f'Argument upperbound must be at least 5, but got {upperbound}.'
         ub = upperbound
         lb = -upperbound
@@ -62,7 +62,7 @@ class Dynamic_Dataset(Dataset):
             else:
                 bias = 0
             instance = eval(func_list[id])(dim=dim, shift=shift, rotate=H, bias=bias, lb=lb, ub=ub)
-            instance_noise.append(Dynamic_Problem(max_fes=50000, problem_list=instance, noise=my_noise))
+            instance_noise.append(Dynamic_Problem(max_fes=20000, problem_list=instance, noise=my_noise))
 
         instance_weight = []  # 12*2+12*3+12*4+12*5
         for i in range(48):
@@ -84,9 +84,9 @@ class Dynamic_Dataset(Dataset):
                     bias = 0
                 instance = eval(func_list[id])(dim=dim, shift=shift, rotate=H, bias=bias, lb=lb, ub=ub)
                 instance_list.append(instance)
-            instance_weight.append(Dynamic_Problem(max_fes=50000,
+            instance_weight.append(Dynamic_Problem(max_fes=20000,
                                                    problem_list=instance_list,
-                                                   population_weight=Sub_Problem_Weight(len(instance_list), 50000, rates=1 / len(instance_list))))
+                                                   population_weight=Sub_Problem_Weight(len(instance_list), 20000, rates=1 / len(instance_list))))
 
         instance_composition = []  # 12*2+12*3+12*4+12*5
         for i in range(48):
@@ -108,9 +108,9 @@ class Dynamic_Dataset(Dataset):
                     bias = 0
                 instance = eval(func_list[id])(dim=dim, shift=shift, rotate=H, bias=bias, lb=lb, ub=ub)
                 instance_list.append(instance)
-            instance_composition.append(Dynamic_Problem(max_fes=50000,
+            instance_composition.append(Dynamic_Problem(max_fes=20000,
                                                    problem_list=instance_list,
-                                                   population_weight=Sub_Problem_Weight(len(instance_list), 50000, rates=1 / len(instance_list)),
+                                                   population_weight=Sub_Problem_Weight(len(instance_list), 20000, rates=1 / len(instance_list)),
                                                    noise=my_noise))
 
         instance_list = instance_noise + instance_weight + instance_composition
