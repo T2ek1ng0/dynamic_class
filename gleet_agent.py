@@ -89,10 +89,14 @@ class Actor(nn.Module):
 
         population_feature = x_in[:, :, :self.node_dim]
         eef = x_in[:, :, self.node_dim:]
+        assert torch.isfinite(population_feature).all(), 'NaN in population_feature'
+        assert torch.isfinite(eef).all(), 'NaN in eef'
         # pass through embedder
         h_em = self.embedder(population_feature)
+        assert torch.isfinite(h_em).all(), 'NaN in h_em'
         # pass through encoder
         logits = self.encoder(h_em)
+        assert torch.isfinite(logits).all(), 'NaN in logits after encoder'
         # pass through the embedder to get eef embedding
         exploration_feature = eef[:, :, :self.node_dim]
         exploitation_feature = eef[:, :, self.node_dim:]
@@ -106,6 +110,7 @@ class Actor(nn.Module):
 
         # pass through decoder
         logits = self.decoder(logits, x_in_decoder)
+        assert torch.isfinite(logits).all(), 'NaN in logits after decoder'
 
         # share logits to critic net, where logits is from the decoder output
         if only_critic:
@@ -116,6 +121,9 @@ class Actor(nn.Module):
 
         # don't share the network between actor and critic if there is no attention mechanism
         _to_critic = logits
+
+        assert torch.isfinite(mu).all(), "NaN in mu"
+        assert torch.isfinite(sigma).all(), "NaN in sigma"
 
         policy = Normal(mu, sigma)
 
@@ -130,6 +138,11 @@ class Actor(nn.Module):
         # The log_prob of each instance is summed up, since it is a joint action for a population
         log_prob_per_particle = log_prob.sum(dim=-1)  # (batch_size, ps)
         log_prob = torch.sum(log_prob_per_particle, dim=1)
+
+        assert torch.isfinite(action).all(), "NaN in action"
+        assert torch.isfinite(log_prob).all(), "NaN in log_prob"
+        if to_critic:
+            assert torch.isfinite(_to_critic).all(), "NaN in _to_critic features"
 
         if require_entropy:
             entropy = policy.entropy()  # for logging only
@@ -167,6 +180,9 @@ class Critic(nn.Module):
     def forward(self, h_features):
         # since it's joint actions, the input should be meaned at population-dimention
         h_features = torch.mean(h_features, dim=-2)
+
+        assert torch.isfinite(h_features).all(), "NaN in critic input"
+
         # pass through value_head to get baseline_value
         baseline_value = self.value_head(h_features)
 
@@ -312,6 +328,8 @@ class GLEET(PPO_Agent):
             state = torch.Tensor(state).to(self.device)
         except:
             pass
+
+        assert torch.isfinite(state).all(), 'NaN in state'
 
         t = 0
         # initial_cost = obj
@@ -510,6 +528,8 @@ class GLEET(PPO_Agent):
             env_cost = env.get_env_attr('cost')
             env_fes = env.get_env_attr('fes')
             results = {'cost': env_cost, 'fes': env_fes, 'return': R, 'avg_dist': env.optimizer.avgdist}
+            if env.optimizer.curr_error:
+                results['error'] = env.optimizer.curr_error
 
             if self.config.full_meta_data:
                 meta_X = env.get_env_attr('meta_X')
