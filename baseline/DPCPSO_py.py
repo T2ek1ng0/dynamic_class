@@ -1,4 +1,7 @@
 """
+Li, Fei, et al.
+       "A fast density peak clustering based particle swarm optimizer for dynamic optimization."
+       Expert Systems with Applications 236 (2024): 121254.
 paper: https://www.sciencedirect.com/science/article/pii/S0957417423017566
 source: https://github.com/EvoMindLab/EDOLAB/tree/main/Algorithm/DPCPSO
 GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
