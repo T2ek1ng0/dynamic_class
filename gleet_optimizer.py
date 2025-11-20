@@ -82,6 +82,7 @@ class GLEET_Optimizer(Learnable_Optimizer):
         self.archive_newval = []
         self.dim = None
         self.avgdist = 0
+        self.curr_error = None
 
     def __str__(self):
         """
@@ -344,25 +345,6 @@ class GLEET_Optimizer(Learnable_Optimizer):
 
     # feature encoding
     def observe(self):
-        """
-        # Introduction
-        Computes and returns a set of normalized features representing the current state of the particle swarm optimizer. These features are used for monitoring or as input to learning-based optimization strategies.
-        # Returns:
-        - np.ndarray: A 2D array of shape (ps, 9), where each row contains the following normalized features for each particle:
-            - fea0: Current cost normalized by maximum cost.
-            - fea1: Difference between current cost and global best value, normalized by maximum cost.
-            - fea2: Difference between current cost and personal best, normalized by maximum cost.
-            - fea3: Remaining function evaluations normalized by maximum evaluations.
-            - fea4: Number of iterations without improvement for each particle, normalized by maximum steps.
-            - fea5: Number of iterations without improvement for the whole swarm, normalized by maximum steps.
-            - fea6: Euclidean distance between current position and global best position, normalized by maximum distance.
-            - fea7: Euclidean distance between current position and personal best position, normalized by maximum distance.
-            - fea8: Cosine similarity between the vectors from current to personal best and from current to global best.
-        # Notes:
-        - Handles division by zero and NaN values in cosine similarity calculation.
-        - Assumes all required attributes (such as `self.particles`, `self.max_cost`, etc.) are properly initialized.
-        """
-
         max_step = self.max_fes // self.ps
         # cost cur
         #fea0 = self.particles['c_cost'] / self.max_cost
@@ -497,7 +479,8 @@ class GLEET_Optimizer(Learnable_Optimizer):
 
         # calculate the new costs
         new_cost = self.get_costs(new_position, problem)
-        self.avgdist += problem.avg_dist
+        if problem.avg_dist:
+            self.avgdist += problem.avg_dist
 
         # update particles
         filters = new_cost < self.particles['pbest_val']
@@ -523,7 +506,7 @@ class GLEET_Optimizer(Learnable_Optimizer):
         meandis = np.sum(new_pop_dist) / (self.ps * (self.ps - 1))
         new_particles = {'current_position': new_position.copy(),
                          'c_cost': new_cost,
-                         'v': v,
+                         'v': new_velocity,
                          'pop_dist': new_pop_dist.copy(),
                          'neighbor_matrix': new_neighbor_matrix.copy(),
                          'gbest_position': gbest_position.copy(),  # dim
@@ -545,9 +528,10 @@ class GLEET_Optimizer(Learnable_Optimizer):
         self.per_no_improve -= tmp
 
         # cal the reward
-        all_pos = np.concatenate(self.archive_pos, axis=0)
+        all_pos = np.stack(self.archive_pos, axis=0)
         self.archive_newval = problem.eval(all_pos)  # t-5,t-4,t-3,t-2,t-1
-        self.avgdist += problem.avg_dist
+        if problem.avg_dist:
+            self.avgdist += problem.avg_dist
         self.archive_val.append(gbest_val)
         reward = self.cal_reward()
         reward *= self.reward_scale
@@ -557,6 +541,9 @@ class GLEET_Optimizer(Learnable_Optimizer):
         self.archive_pos.append(gbest_position.copy())
         self.archive_pos = self.archive_pos[-5:]
         self.archive_val = self.archive_val[-5:]
+        # get the population next_state
+        #next_state = self.observe()  # ps, 8
+        next_state = np.full((self.ps, 8), 0.1)
         self.archive_prevval = np.concatenate((self.archive_newval.copy(), np.array([self.archive_val[-1]])), axis=0)[-5:]  # f_t-1(5,1)
 
         if self.__config.full_meta_data:
@@ -568,10 +555,6 @@ class GLEET_Optimizer(Learnable_Optimizer):
             is_end = self.fes >= self.max_fes
         else:
             is_end = self.fes >= self.max_fes
-
-
-        # get the population next_state
-        next_state = self.observe()  # ps, 9
 
         # update exploration state
         self.pbest_feature = np.where(self.per_no_improve[:, None] == 0, next_state, self.pbest_feature)
@@ -586,6 +569,8 @@ class GLEET_Optimizer(Learnable_Optimizer):
             self.cost.append(self.particles['gbest_val'])
 
         if is_end:
+            if hasattr(problem, 'gmpb_problem'):
+                self.curr_error = self.cal_Eo(problem)
             if len(self.cost) >= self.__config.n_logpoint + 1:
                 self.cost[-1] = self.particles['gbest_val']
             else:
@@ -595,3 +580,6 @@ class GLEET_Optimizer(Learnable_Optimizer):
         info = {}
         #print(np.max(next_state), np.min(next_state))
         return next_state, reward, is_end, info
+
+    def cal_Eo(self, problem):
+        return sum(problem.gmpb_problem.CurrentError[0]) / len(problem.gmpb_problem.CurrentError[0])
