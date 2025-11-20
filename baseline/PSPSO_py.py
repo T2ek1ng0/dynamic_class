@@ -1,6 +1,7 @@
 """
 paper: https://arxiv.org/pdf/2505.11634
 source: https://github.com/FreddyDeWatersir/PSPSO
+GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np
@@ -90,13 +91,13 @@ class PSPSO(Basic_Optimizer):
             Swarm[i]['CurrentRadius'] = Swarm[i]['InitRadius']
             if not problem.RecentChange:
                 Swarm[i]['PbestValue'] = Swarm[i]['FitnessValue'].copy()
-                Swarm[i]['GbestID'] = np.argmax(Swarm[i]['PbestValue'])  # 最大化
+                Swarm[i]['GbestID'] = np.argmax(Swarm[i]['PbestValue'])
                 Swarm[i]['GbestValue'] = Swarm[i]['PbestValue'][Swarm[i]['GbestID']]
                 Swarm[i]['GbestPosition'] = Swarm[i]['PbestPosition'][Swarm[i]['GbestID'], :].copy()
             else:
                 Swarm[i]['FitnessValue'] = -np.inf * np.ones(Swarm[i]['X'].shape[0])
                 Swarm[i]['PbestValue'] = Swarm[i]['FitnessValue'].copy()
-                Swarm[i]['GbestID'] = np.argmax(Swarm[i]['PbestValue'])  # 最大化
+                Swarm[i]['GbestID'] = np.argmax(Swarm[i]['PbestValue'])
                 Swarm[i]['GbestValue'] = Swarm[i]['PbestValue'][Swarm[i]['GbestID']]
                 Swarm[i]['GbestPosition'] = Swarm[i]['PbestPosition'][Swarm[i]['GbestID'], :].copy()
         return Swarm
@@ -118,7 +119,6 @@ class PSPSO(Basic_Optimizer):
                 if problem.RecentChange:
                     return
                 self.pop[i]['FitnessValue'] = tmp
-                # 似乎是最大化
                 update_mask = self.pop[i]['FitnessValue'] > self.pop[i]['PbestValue']
                 self.pop[i]['PbestValue'][update_mask] = tmp[update_mask]
                 self.pop[i]['PbestPosition'][update_mask] = self.pop[i]['X'][update_mask]
@@ -141,7 +141,7 @@ class PSPSO(Basic_Optimizer):
                 idx_i = valid_idx[i]
                 idx_j = valid_idx[j]
                 if dist_matrix[i, j] < min(self.pop[idx_i]['InitRadius'], self.pop[idx_j]['InitRadius']):
-                    if self.pop[idx_i]['GbestValue'] > self.pop[idx_j]['GbestValue']:  # 最大化
+                    if self.pop[idx_i]['GbestValue'] > self.pop[idx_j]['GbestValue']:
                         delete_idx.append(idx_j)
                     else:
                         delete_idx.append(idx_i)
@@ -167,7 +167,7 @@ class PSPSO(Basic_Optimizer):
         # Convergence Detection and Deactivation
         AnyConverged = 0
         converged_list = []
-        BestID = np.argmax([p['GbestValue'] for p in self.pop])  # 最大化
+        BestID = np.argmax([p['GbestValue'] for p in self.pop])
         for i in range(self.SwarmNumber):
             if self.pop[i]['CurrentRadius'] < self.ConvergenceLimit and i != BestID:
                 self.pop[i]['IsConverged'] = True
