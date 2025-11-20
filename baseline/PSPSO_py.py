@@ -1,5 +1,8 @@
 """
-paper: https://arxiv.org/pdf/2505.11634
+Signorelli, Federico, and Anil Yaman.
+        "A Perturbation and Speciation-Based Algorithm for Dynamic Optimization Uninformed of Change."
+        arXiv:2505.11634 (2025).
+paper: https://arxiv.org/abs/2505.11634
 source: https://github.com/FreddyDeWatersir/PSPSO
 GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
 """
