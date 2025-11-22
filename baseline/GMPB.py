@@ -16,6 +16,9 @@ class GMPB(Basic_Problem):
                  AngleSeverity=math.pi / 9,
                  TauSeverity=0.2,
                  EtaSeverity=10):
+        self.fes = 0
+        self.T1 = [0]
+        self.avg_dist = None
         self.initialize(dim, PeakNumber, ChangeFrequency, ShiftSeverity, EnvironmentNumber, HeightSeverity,
                         WidthSeverity, AngleSeverity, TauSeverity, EtaSeverity)
         self.optimum = self.OptimumValue[self.Environmentcounter]
@@ -23,20 +26,16 @@ class GMPB(Basic_Problem):
     def __str__(self):
         return "GMPB"
 
-    def reset(self,
-              dim=5,
-              PeakNumber=10,
-              ChangeFrequency=5000,
-              ShiftSeverity=1,
-              EnvironmentNumber=100,
-              HeightSeverity=7,
-              WidthSeverity=1,
-              AngleSeverity=math.pi / 9,
-              TauSeverity=0.2,
-              EtaSeverity=10):
-        self.initialize(dim, PeakNumber, ChangeFrequency, ShiftSeverity, EnvironmentNumber, HeightSeverity,
-                        WidthSeverity, AngleSeverity, TauSeverity, EtaSeverity)
+    def reset(self):
+        self.fes = 0
+        self.T1 = [0]
+        self.avg_dist = None
         self.optimum = self.OptimumValue[self.Environmentcounter]
+        self.Environmentcounter = 0
+        self.RecentChange = 0
+        self.Ebbc = np.full(self.EnvironmentNumber, np.nan)
+        self.CurrentError = np.full(self.maxfes + 1, np.nan)
+        self.CurrentPerformance = np.full(self.maxfes + 1, np.nan)
 
     def initialize(self,
                    dim=5,
@@ -59,9 +58,6 @@ class GMPB(Basic_Problem):
         self.AngleSeverity = AngleSeverity
         self.TauSeverity = TauSeverity
         self.EtaSeverity = EtaSeverity
-        self.fes = 0
-        self.T1 = [0]
-        self.avg_dist = None
         self.maxfes = self.ChangeFrequency * self.EnvironmentNumber
         self.Environmentcounter = 0
         self.RecentChange = 0
