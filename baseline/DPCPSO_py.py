@@ -41,7 +41,7 @@ class DPCPSO(Basic_Optimizer):
 
 
 
-    def DensityPeakClustering(self, population, peak_num=10):
+    def DensityPeakClustering(self, population, PeakNumber=10):
         # Stage 1: Compute density and distance
         N = population.shape[0]
         dist = squareform(pdist(population, metric='sqeuclidean'))
@@ -72,7 +72,7 @@ class DPCPSO(Basic_Optimizer):
         gamma = rho * delta
         gamma_idx = np.argsort(gamma)[::-1]
         sort_gamma = gamma[gamma_idx]
-        gamma_threshold = -6.077 * N * np.log(peak_num) + 50.49 * N
+        gamma_threshold = -6.077 * N * np.log(PeakNumber) + 50.49 * N
         CenterIdx = []
         for i in range(len(sort_gamma)):
             if sort_gamma[i] > gamma_threshold:
@@ -98,7 +98,7 @@ class DPCPSO(Basic_Optimizer):
         return SubPopulations, Centers
 
     def sub_population_generator(self, init_swarm, problem):
-        SubPops, Centers = self.DensityPeakClustering(init_swarm, problem.peak_num)
+        SubPops, Centers = self.DensityPeakClustering(init_swarm, problem.PeakNumber)
         population = {
             'X': None,
             'Velocity': None,
@@ -369,12 +369,12 @@ class DPCPSO(Basic_Optimizer):
             if problem.RecentChange == 1:
                 problem.reset_RecentChange()
                 self.change_reaction(problem)
-                print(f"Environment number: {problem.current_env}")
+                print(f"Environment number: {problem.Environmentcounter}")
 
         gbest_list = []
         for i in range(self.SwarmNumber):
             gbest_list.append(self.pop[i]['GbestValue'])
-        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avgdist}
+        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avg_dist}
         return result
 
 

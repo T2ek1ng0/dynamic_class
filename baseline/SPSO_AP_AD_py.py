@@ -285,10 +285,10 @@ class SPSO_AP_AD(Basic_Optimizer):
             if problem.RecentChange == 1:
                 problem.reset_RecentChange()
                 self.change_reaction(problem)
-                #print(f"Environment number: {problem.current_env}")
+                #print(f"Environment number: {problem.Environmentcounter}")
 
         gbest_list = [max(p['PbestFitness'].item() for p in self.Particle)]
-        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avgdist}
+        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avg_dist}
         return result
 
 
