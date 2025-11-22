@@ -27,13 +27,12 @@ class SPSO_AP_AD(Basic_Optimizer):
         self.gama = 0.1  # Decay rate for updating beta
         self.Nmax = 30  # Maximum allowed number of species before anti‑convergence triggers
         self.avgdist = 0
-
     def initialize_swarm(self, problem):
         self.dim = problem.dim
         self.ub = problem.ub
         self.lb = problem.lb
         self.ShiftSeverity = 1
-        self.ExclusionLimit = 0.5 * ((self.ub - self.lb) / (problem.peak_num ** (1 / self.dim)))
+        self.ExclusionLimit = 0.5 * ((self.ub - self.lb) / (problem.PeakNumber ** (1 / self.dim)))
         self.GenerateRadious = 0.6 * self.ExclusionLimit
         self.teta = self.ShiftSeverity
         self.tracker = []
@@ -209,7 +208,7 @@ class SPSO_AP_AD(Basic_Optimizer):
                                 self.Particle.pop(idx)
                         self.Species = self.CreatingSpecies()
                         return
-                    if self.Particle[self.Species[i]['member'][j]]['FitnessValue'].item() > self.Particle[self.Species[i]['member'][j]]['PbestFitness'].item():
+                    if self.Particle[self.Species[i]['member'][j]]['FitnessValue'] > self.Particle[self.Species[i]['member'][j]]['PbestFitness']:
                         self.Particle[self.Species[i]['member'][j]]['PbestFitness'] = self.Particle[self.Species[i]['member'][j]]['FitnessValue'].copy()
                         self.Particle[self.Species[i]['member'][j]]['PbestPosition'] = self.Particle[self.Species[i]['member'][j]]['X'].copy()
         # remove particles which were removed by exclusion
