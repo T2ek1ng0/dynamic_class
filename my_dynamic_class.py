@@ -18,7 +18,9 @@ class Dynamic_Problem:
         self.fes = 0
         self.maxfes = max_fes
         self.avg_dist = None
-        self.RecentChange = 0  # 环境变化不可知的话不用管这个
+        self.RecentChange = 0  # 兼容baseline用的
+        self.EnvironmentNumber = 1  # 同上
+        self.Environmentcounter = 0  # 同上
         if self.population_weight:
             self.ub = self.problem_list[self.population_weight.pos].ub
             self.lb = self.problem_list[self.population_weight.pos].lb

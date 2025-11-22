@@ -203,7 +203,7 @@ class PSPSO(Basic_Optimizer):
             self.iterative_components(problem)
             if problem.RecentChange == 1:
                 problem.reset_RecentChange()
-                print(f"Environment number:{problem.current_env}")
+                print(f"Environment number:{problem.Environmentcounter}")
 
         gbest_list = []
         for i in range(self.SwarmNumber):

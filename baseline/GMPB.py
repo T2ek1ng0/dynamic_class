@@ -188,8 +188,8 @@ class GMPB(Basic_Problem):
         result = np.full(SolutionNumber, np.nan)
         for j in range(SolutionNumber):
             if self.fes >= self.maxfes or self.RecentChange:
-                return -np.inf if SolutionNumber == 1 else np.full(SolutionNumber, -np.inf)
-            result[j] = self.fitness(X)
+                return np.full(SolutionNumber, -np.inf)
+            result[j] = self.fitness(X[j])
             self.fes += 1
             SolutionError = self.OptimumValue[self.Environmentcounter] - result[j]
             if self.fes % self.ChangeFrequency != 1:
