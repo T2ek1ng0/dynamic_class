@@ -25,7 +25,7 @@ class PSPSO(Basic_Optimizer):
         self.PerturbationFactor = 0.025
         self.initPopulationSize = self.SwarmSize * self.SwarmNumber
 
-        self.avgdist = 0
+        self.avg_dist = 0
 
     def __str__(self):
         return "PSPSO"
@@ -44,7 +44,7 @@ class PSPSO(Basic_Optimizer):
         swarm_size = init_swarm.shape[0]
         fitness = problem.eval(init_swarm)
         if problem.avg_dist:
-            self.avgdist += problem.avg_dist
+            self.avg_dist += problem.avg_dist
         # Sort particles by their fitness in descending order
         sortIndex = np.argsort(fitness)[::-1]
         # Form clusters
@@ -118,7 +118,7 @@ class PSPSO(Basic_Optimizer):
                 self.pop[i]['Velocity'][clip_mask] = 0
                 tmp = problem.eval(self.pop[i]['X'])
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
                 if problem.RecentChange:
                     return
                 self.pop[i]['FitnessValue'] = tmp
@@ -156,7 +156,7 @@ class PSPSO(Basic_Optimizer):
         idx = np.random.randint(0, self.SwarmNumber)
         self.pop[idx]['PbestValue'] = problem.eval(self.pop[idx]['PbestPosition'])
         if problem.avg_dist:
-            self.avgdist += problem.avg_dist
+            self.avg_dist += problem.avg_dist
         BestPbestID = np.argmax(self.pop[idx]['PbestValue'])
         self.pop[idx]['GbestValue'] = self.pop[idx]['PbestValue'][BestPbestID]
         self.pop[idx]['GbestPosition'] = self.pop[idx]['PbestPosition'][BestPbestID]
@@ -208,7 +208,7 @@ class PSPSO(Basic_Optimizer):
         gbest_list = []
         for i in range(self.SwarmNumber):
             gbest_list.append(self.pop[i]['GbestValue'])
-        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avgdist}
+        result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avg_dist}
         return result
 
 
