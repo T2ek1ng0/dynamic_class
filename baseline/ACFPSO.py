@@ -308,6 +308,10 @@ class ACFPSO(Basic_Optimizer):
         for i in range(self.SwarmNumber):
             gbest_list.append(self.pop[i]['BestValue'])
         result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avg_dist}
+        if hasattr(problem, 'CurrentError'):
+            err = problem.CurrentError
+            offlineerror = np.nanmean(err)
+            result['current_error'] = offlineerror
         return result
 
 

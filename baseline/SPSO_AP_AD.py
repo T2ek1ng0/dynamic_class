@@ -81,7 +81,7 @@ class SPSO_AP_AD(Basic_Optimizer):
     def CreatingSpecies(self):
         for p in self.Particle:
             p['Processed'] = 0
-        pbest_list = [p['PbestFitness'].item() for p in self.Particle]
+        pbest_list = [p['PbestFitness'].item() if isinstance(p['PbestFitness'], np.ndarray) else p['PbestFitness'] for p in self.Particle]
         SortIndex = np.argsort(pbest_list)[::-1]
         Species = {
             'seed': None,
@@ -293,6 +293,10 @@ class SPSO_AP_AD(Basic_Optimizer):
 
         gbest_list = [max(p['PbestFitness'].item() for p in self.Particle)]
         result = {'cost': gbest_list, 'fes': problem.fes, 'avg_dist': self.avg_dist}
+        if hasattr(problem, 'CurrentError'):
+            err = problem.CurrentError
+            offlineerror = np.nanmean(err)
+            result['current_error'] = offlineerror
         return result
 
 
