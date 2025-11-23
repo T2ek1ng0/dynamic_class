@@ -369,7 +369,7 @@ class DPCPSO(Basic_Optimizer):
             if problem.RecentChange == 1:
                 problem.reset_RecentChange()
                 self.change_reaction(problem)
-                print(f"Environment number: {problem.Environmentcounter}")
+                #print(f"Environment number: {problem.Environmentcounter}")
 
         gbest_list = []
         for i in range(self.SwarmNumber):

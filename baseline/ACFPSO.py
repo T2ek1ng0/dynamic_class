@@ -26,6 +26,9 @@ class ACFPSO(Basic_Optimizer):
         self.ExclusionInnerLayer = 0.3
         self.avg_dist = 0
 
+    def __str__(self):
+        return "ACFPSO"
+
     def initialize_swarm(self, problem):
         self.SwarmNumber = 1
         self.dim = problem.dim

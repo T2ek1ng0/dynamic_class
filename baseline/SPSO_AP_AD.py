@@ -27,6 +27,9 @@ class SPSO_AP_AD(Basic_Optimizer):
         self.gama = 0.1  # Decay rate for updating beta
         self.Nmax = 30  # Maximum allowed number of species before anti‑convergence triggers
         self.avg_dist = 0
+
+    def __str__(self):
+        return "SPSO_AP_AD"
     def initialize_swarm(self, problem):
         self.dim = problem.dim
         self.ub = problem.ub
