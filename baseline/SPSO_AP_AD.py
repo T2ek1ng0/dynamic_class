@@ -30,6 +30,7 @@ class SPSO_AP_AD(Basic_Optimizer):
 
     def __str__(self):
         return "SPSO_AP_AD"
+
     def initialize_swarm(self, problem):
         self.dim = problem.dim
         self.ub = problem.ub
