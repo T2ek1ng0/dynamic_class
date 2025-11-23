@@ -26,6 +26,9 @@ class APCPSO(Basic_Optimizer):
 
         self.avg_dist = 0
 
+    def __str__(self):
+        return "APCPSO"
+
     def initialize_swarm(self, problem):
         self.dim = problem.dim
         self.lb = problem.lb
@@ -333,7 +336,7 @@ class APCPSO(Basic_Optimizer):
             if problem.RecentChange == 1:
                 problem.reset_RecentChange()
                 self.change_reaction(problem)
-                print(f"Environment number:{problem.Environmentcounter}")
+                #print(f"Environment number:{problem.Environmentcounter}")
 
         gbest_list = []
         for i in range(self.SwarmNumber):
