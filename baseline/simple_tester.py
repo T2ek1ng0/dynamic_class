@@ -2,6 +2,7 @@ from dynamic_class.baseline.PSPSO import PSPSO
 from dynamic_class.baseline.DPCPSO import DPCPSO
 from dynamic_class.baseline.SPSO_AP_AD import SPSO_AP_AD
 from dynamic_class.baseline.ACFPSO import ACFPSO
+from dynamic_class.baseline.APCPSO import APCPSO
 from dynamic_class.baseline.GMPB import GMPB
 from dynamic_class.my_config import Config
 import numpy as np
@@ -19,7 +20,7 @@ config = {
     'test_difficulty': 'easy',  # this is a train-test split mode
     'test_parallel_mode': 'Serial',  # 'Full', 'Baseline_Problem', 'Problem_Testrun', 'Batch', 'Serial'
     'baselines': {
-        'Pspso': {'optimizer': SPSO_AP_AD},
+        'Pspso': {'optimizer': APCPSO},
     },
 }
 RunNumber = 10
@@ -41,7 +42,7 @@ for i in range(RunNumber):
                  EtaSeverity=10)
     #np.random.seed(None)
     #random.seed(None)
-    opt = ACFPSO(config)
+    opt = APCPSO(config)
     opt.run_episode(problem)
     err = problem.CurrentError
     offlineerror = np.nanmean(err)

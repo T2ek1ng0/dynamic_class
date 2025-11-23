@@ -26,7 +26,7 @@ class SPSO_AP_AD(Basic_Optimizer):
         self.beta = 1  # Initial factor for adjusting the deactivation threshold dynamically
         self.gama = 0.1  # Decay rate for updating beta
         self.Nmax = 30  # Maximum allowed number of species before anti‑convergence triggers
-        self.avgdist = 0
+        self.avg_dist = 0
     def initialize_swarm(self, problem):
         self.dim = problem.dim
         self.ub = problem.ub
@@ -53,7 +53,7 @@ class SPSO_AP_AD(Basic_Optimizer):
         PbestPosition = init_X.copy()
         FitnessValue = problem.eval(init_X)
         if problem.avg_dist:
-            self.avgdist += problem.avg_dist
+            self.avg_dist += problem.avg_dist
         if not problem.RecentChange:
             PbestFitness = FitnessValue
         else:
@@ -200,7 +200,7 @@ class SPSO_AP_AD(Basic_Optimizer):
                     self.Particle[self.Species[i]['member'][j]]['Velocity'][tmp_mask] = 0
                     self.Particle[self.Species[i]['member'][j]]['FitnessValue'] = problem.eval(self.Particle[self.Species[i]['member'][j]]['X'])
                     if problem.avg_dist:
-                        self.avgdist += problem.avg_dist
+                        self.avg_dist += problem.avg_dist
                     if problem.RecentChange:
                         if len(removed_particle_index):
                             removed_particle_index = sorted(set(removed_particle_index), reverse=True)
@@ -268,7 +268,7 @@ class SPSO_AP_AD(Basic_Optimizer):
         for j in range(len(self.Particle)):
             self.Particle[j]['FitnessValue'] = problem.eval(self.Particle[j]['X'])
             if problem.avg_dist:
-                self.avgdist += problem.avg_dist
+                self.avg_dist += problem.avg_dist
             self.Particle[j]['PbestFitness'] = self.Particle[j]['FitnessValue'].copy()
             self.Particle[j]['PbestPosition'] = self.Particle[j]['X'].copy()
         # Updating thresholds parameters

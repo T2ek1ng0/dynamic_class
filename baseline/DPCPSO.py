@@ -25,7 +25,7 @@ class DPCPSO(Basic_Optimizer):
         self.ConvergenceThreshold = 0.1
         self.QuantumNumber = 5
 
-        self.avgdist = 0
+        self.avg_dist= 0
 
     def __str__(self):
         return "DPCPSO"
@@ -124,13 +124,13 @@ class DPCPSO(Basic_Optimizer):
             if current_pop.shape[0] > 5:
                 current_fitness = problem.eval(current_pop)
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
                 sorted_indices = np.argsort(current_fitness)[::-1]
                 selected_indices = sorted_indices[:5]
                 current_pop = current_pop[selected_indices, :]
                 current_fitness = problem.eval(current_pop)
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
 
             Swarm[i]['X'] = current_pop.copy()
             Swarm[i]['Velocity'] = -4 + 8 * np.random.rand(current_pop.shape[0], self.dim)
@@ -140,7 +140,7 @@ class DPCPSO(Basic_Optimizer):
             else:
                 Swarm[i]['FitnessValue'] = problem.eval(Swarm[i]['X'])
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
             Swarm[i]['PbestPosition'] = current_pop.copy()
             Swarm[i]['PbestValue'] = Swarm[i]['FitnessValue'].copy()
             Swarm[i]['IsConverged'] = 0
@@ -174,7 +174,7 @@ class DPCPSO(Basic_Optimizer):
             self.pop[i]['Velocity'][clip_mask] = 0
             fitness = problem.eval(self.pop[i]['X'])
             if problem.avg_dist:
-                self.avgdist += problem.avg_dist
+                self.avg_dist += problem.avg_dist
             if problem.RecentChange:
                 return
             self.pop[i]['FitnessValue'] = fitness.copy()
@@ -195,7 +195,7 @@ class DPCPSO(Basic_Optimizer):
             self.pop[i]['StagnationCounter'][reintialize_mask] = 0
             self.pop[i]['FitnessValue'][reintialize_mask] = problem.eval(self.pop[i]['X'][reintialize_mask])
             if problem.avg_dist:
-                self.avgdist += problem.avg_dist
+                self.avg_dist += problem.avg_dist
             if problem.RecentChange:
                 return
             self.pop[i]['PbestValue'][reintialize_mask] = self.pop[i]['FitnessValue'][reintialize_mask].copy()
@@ -221,7 +221,7 @@ class DPCPSO(Basic_Optimizer):
                 self.pop[i]['Shifts'] = None
                 self.pop[i]['FitnessValue'] = problem.eval(self.pop[i]['X'])
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
                 if problem.RecentChange:
                     return
                 self.pop[i]['PbestPosition'] = self.pop[i]['X'].copy()
@@ -257,7 +257,7 @@ class DPCPSO(Basic_Optimizer):
             self.pop[worst_idx]['Shifts'] = None
             self.pop[worst_idx]['FitnessValue'] = problem.eval(self.pop[worst_idx]['X'])
             if problem.avg_dist:
-                self.avgdist += problem.avg_dist
+                self.avg_dist += problem.avg_dist
             if problem.RecentChange:
                 return
             self.pop[worst_idx]['PbestPosition'] = self.pop[worst_idx]['X'].copy()
@@ -316,7 +316,7 @@ class DPCPSO(Basic_Optimizer):
         for i in range(self.SwarmNumber):
             self.pop[i]['GbestValue'] = problem.eval(self.pop[i]['GbestPosition'])
             if problem.avg_dist:
-                self.avgdist += problem.avg_dist
+                self.avg_dist += problem.avg_dist
             GbestValues[i] = self.pop[i]['GbestValue']
         SortIndex = np.argsort(GbestValues)[::-1]
         Swarm_Sort = [self.pop[i] for i in SortIndex]
@@ -334,7 +334,7 @@ class DPCPSO(Basic_Optimizer):
                 temptryPosition = np.clip(temptryPosition, self.lb, self.ub)
                 temptryFitness = problem.eval(temptryPosition)
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
                 if temptryFitness > self.pop[i]['GbestValue']:
                     a = 1  # Adjust in the positive direction
                 else:
@@ -345,7 +345,7 @@ class DPCPSO(Basic_Optimizer):
                 tryPosition = np.clip(tryPosition, self.lb, self.ub)
                 alltryFitness = problem.eval(tryPosition)
                 if problem.avg_dist:
-                    self.avgdist += problem.avg_dist
+                    self.avg_dist += problem.avg_dist
                 bestIdx = np.argmax(alltryFitness)
                 if alltryFitness[bestIdx] > tryBestValue:
                     tryBestPosition = tryPosition[bestIdx, :]
