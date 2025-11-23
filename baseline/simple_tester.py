@@ -43,9 +43,7 @@ for i in range(RunNumber):
     #np.random.seed(None)
     #random.seed(None)
     opt = APCPSO(config)
-    opt.run_episode(problem)
-    err = problem.CurrentError
-    offlineerror = np.nanmean(err)
-    OfflineError.append(offlineerror)
-    print(f"Run {run_counter}/{RunNumber}, current error: {offlineerror:.2f}")
+    res = opt.run_episode(problem)
+    OfflineError.append(res['current_error'])
+    print(f"Run {run_counter}/{RunNumber}, current error: {res['current_error']:.2f}")
 print(f"E_o: mean={np.mean(OfflineError)}, median={np.median(OfflineError)}, std={np.std(OfflineError)}")
