@@ -124,34 +124,43 @@ class PSPSO(Basic_Optimizer):
                 self.pop[i]['FitnessValue'] = tmp
                 update_mask = self.pop[i]['FitnessValue'] > self.pop[i]['PbestValue']
                 self.pop[i]['PbestValue'][update_mask] = tmp[update_mask]
-                self.pop[i]['PbestPosition'][update_mask] = self.pop[i]['X'][update_mask]
+                self.pop[i]['PbestPosition'][update_mask] = self.pop[i]['X'][update_mask].copy()
                 BestPbestValue = np.max(self.pop[i]['PbestValue'])
                 BestPbestID = np.argmax(self.pop[i]['PbestValue'])
                 if BestPbestValue > self.pop[i]['GbestValue']:
                     self.pop[i]['GbestValue'] = BestPbestValue
-                    self.pop[i]['GbestPosition'] = self.pop[i]['PbestPosition'][BestPbestID]
+                    self.pop[i]['GbestPosition'] = self.pop[i]['PbestPosition'][BestPbestID].copy()
         # Update swarm center
         for i in range(self.SwarmNumber):
             if not self.pop[i]['IsConverged']:
                 self.pop[i]['Center'] = np.mean(self.pop[i]['PbestPosition'], axis=0)
         # Check overlapping and remove worst subpopulation
-        valid_idx = [k for k, p in enumerate(self.pop) if p['X'].shape[0] > 0 and not p['IsConverged']]
-        G = np.array([self.pop[k]['GbestPosition'] for k in valid_idx])
-        dist_matrix = squareform(pdist(G))
-        delete_idx = []
-        for i in range(len(valid_idx)):
-            for j in range(i+1, len(valid_idx)):
-                idx_i = valid_idx[i]
-                idx_j = valid_idx[j]
-                if dist_matrix[i, j] < min(self.pop[idx_i]['InitRadius'], self.pop[idx_j]['InitRadius']):
-                    if self.pop[idx_i]['GbestValue'] > self.pop[idx_j]['GbestValue']:
-                        delete_idx.append(idx_j)
-                    else:
-                        delete_idx.append(idx_i)
-        delete_idx = sorted(set(delete_idx), reverse=True)
-        for idx in delete_idx:
-            del self.pop[idx]
-        self.SwarmNumber = len(self.pop)
+        idx = np.inf
+        while idx != -1:
+            idx = -1
+            i = 0
+            while i < self.SwarmNumber:
+                if self.pop[i]['X'].shape[0] == 0 or self.pop[i]['IsConverged']:
+                    i += 1
+                    continue
+                j = i + 1
+                while j < self.SwarmNumber:
+                    if self.pop[j]['X'].shape[0] == 0 or self.pop[j]['IsConverged']:
+                        j += 1
+                        continue
+                    dist = np.linalg.norm(self.pop[i]['GbestPosition'] - self.pop[j]['GbestPosition'])
+                    if dist < self.pop[i]['InitRadius'] and dist < self.pop[j]['InitRadius']:
+                        if self.pop[i]['GbestValue'] > self.pop[j]['GbestValue']:
+                            self.pop.pop(j)
+                        else:
+                            self.pop.pop(i)
+                        self.SwarmNumber -= 1
+                        idx = i
+                        break
+                    j += 1
+                if idx != -1:
+                    break
+                i += 1
         # Random Subpop Perturbation: 随机挑选一个子群对其Pbest重评估，并在速度上加入扰动
         idx = np.random.randint(0, self.SwarmNumber)
         self.pop[idx]['PbestValue'] = problem.eval(self.pop[idx]['PbestPosition'])
@@ -159,7 +168,7 @@ class PSPSO(Basic_Optimizer):
             self.avg_dist += problem.avg_dist
         BestPbestID = np.argmax(self.pop[idx]['PbestValue'])
         self.pop[idx]['GbestValue'] = self.pop[idx]['PbestValue'][BestPbestID]
-        self.pop[idx]['GbestPosition'] = self.pop[idx]['PbestPosition'][BestPbestID]
+        self.pop[idx]['GbestPosition'] = self.pop[idx]['PbestPosition'][BestPbestID].copy()
         num_particles, dim = self.pop[idx]['X'].shape
         perturb = -self.PerturbationRange + 2 * self.PerturbationRange * np.random.rand(num_particles, dim)
         self.pop[idx]['Velocity'] += perturb
@@ -169,33 +178,44 @@ class PSPSO(Basic_Optimizer):
                 self.pop[i]['CurrentRadius'] = np.mean(cdist(self.pop[i]['PbestPosition'], self.pop[i]['Center'].reshape(1, -1))[:, 0])
         # Convergence Detection and Deactivation
         AnyConverged = 0
-        converged_list = []
         BestID = np.argmax([p['GbestValue'] for p in self.pop])
         for i in range(self.SwarmNumber):
             if self.pop[i]['CurrentRadius'] < self.ConvergenceLimit and i != BestID:
                 self.pop[i]['IsConverged'] = True
                 AnyConverged += 1
-                converged_list.append(i)
         # Diversity Check and Mechanism
         SurvivedParticles = 0
         for i in range(self.SwarmNumber):
             if not self.pop[i]['IsConverged']:
                 SurvivedParticles += self.pop[i]['X'].shape[0]
-        SaveBestPosition = np.zeros((AnyConverged, self.dim))
-        for i, idx in enumerate(converged_list):
-            SaveBestPosition[i] = self.pop[idx]['GbestPosition']
+        SaveBestPosition = []
+        count = 0
         if SurvivedParticles < self.initPopulationSize * self.DiversityDegree:
-            for i in reversed(converged_list):
-                del self.pop[i]
-        NumAddParticles = max(self.initPopulationSize - SurvivedParticles - len(converged_list), 0)
-        AddParticles_X = self.lb + (self.ub - self.lb) * np.random.rand(NumAddParticles, self.dim)
-        AddParticles_X = np.concatenate((AddParticles_X, SaveBestPosition), axis=0)
-        if AddParticles_X.shape[0]:
-            add_swarm = self.sub_population_generator(AddParticles_X, problem)
-            if problem.RecentChange:
-                return
-            self.pop += add_swarm
-            self.SwarmNumber = len(self.pop)
+            while AnyConverged:
+                i = 0
+                while i < self.SwarmNumber:
+                    if self.pop[i]['IsConverged']:
+                        SaveBestPosition.append(self.pop[i]['GbestPosition'].copy())
+                        count += 1
+                        self.pop.pop(i)
+                        self.SwarmNumber -= 1
+                        break
+                    i += 1
+                AnyConverged -= 1
+            SaveBestPosition = np.array(SaveBestPosition)
+            if SaveBestPosition.ndim == 1 and SaveBestPosition.size == 0:
+                SaveBestPosition = np.empty((0, self.dim))
+            elif SaveBestPosition.ndim == 1 and SaveBestPosition.size > 0:
+                SaveBestPosition = SaveBestPosition.reshape(-1, self.dim)
+            NumAddParticles = max(self.initPopulationSize - SurvivedParticles - count, 0)
+            AddParticles_X = self.lb + (self.ub - self.lb) * np.random.rand(NumAddParticles, self.dim)
+            AddParticles_X = np.concatenate((AddParticles_X, SaveBestPosition), axis=0)
+            if AddParticles_X.shape[0]:
+                add_swarm = self.sub_population_generator(AddParticles_X, problem)
+                if problem.RecentChange:
+                    return
+                self.pop += add_swarm
+                self.SwarmNumber = len(self.pop)
 
     def run_episode(self, problem):
         self.initialize_swarm(problem)
