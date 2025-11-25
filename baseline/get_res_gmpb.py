@@ -35,7 +35,7 @@ def read_sgbest_from_pickle(filename="test_results.pkl"):
                         print("(无数据)")
                         continue
 
-                    print(f"mean={np.mean(list_of_res)}, std={np.std(list_of_res)}")
+                    print(f"mean={np.mean(list_of_res)}, std={np.std(list_of_res)}, median={np.median(list_of_res)}")
 
         else:
             print(f"错误：在文件 '{filename}' 中未找到 'current_error' 键。")
@@ -48,5 +48,5 @@ def read_sgbest_from_pickle(filename="test_results.pkl"):
 
 if __name__ == "__main__":
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    pkl_file = os.path.join(script_dir, "output", "test", "20251123T205649_GMPB_easy", "test_results.pkl")
+    pkl_file = os.path.join(script_dir, "output", "test", "20251124T000843_GMPB_easy", "test_results.pkl")
     read_sgbest_from_pickle(pkl_file)
