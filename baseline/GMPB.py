@@ -99,7 +99,9 @@ class GMPB(Basic_Problem):
         self.eta[:, :, 0] = self.MinEta + (self.MaxEta - self.MinEta) * np.random.rand(self.PeakNumber, 4)
         for i in range(1, self.EnvironmentNumber):
             ShiftOffset = np.random.randn(self.PeakNumber, self.dim)
-            Shift = (ShiftOffset / np.linalg.norm(ShiftOffset)) * self.ShiftSeverity
+            norms = np.linalg.norm(ShiftOffset, axis=1, keepdims=True)
+            norms[norms == 0] = 1e-8
+            Shift = ShiftOffset / norms * self.ShiftSeverity
             PeaksPosition = self.PeaksPosition[:, :, i - 1] + Shift
             PeaksWidth = self.PeaksWidth[:, :, i - 1] + np.random.randn(self.PeakNumber, self.dim) * self.WidthSeverity
             PeaksHeight = self.PeaksHeight[i - 1, :] + np.random.randn(self.PeakNumber) * self.HeightSeverity
@@ -108,8 +110,8 @@ class GMPB(Basic_Problem):
             PeaksEta = self.eta[:, :, i-1] + np.random.randn(self.PeakNumber, 4) * self.EtaSeverity
             tmp = PeaksAngle > self.MaxAngle
             PeaksAngle[tmp] = 2 * self.MaxAngle - PeaksAngle[tmp]
-            tmp = PeaksAngle < self.MaxAngle
-            PeaksAngle[tmp] = 2 * self.MaxAngle - PeaksAngle[tmp]
+            tmp = PeaksAngle < self.MinAngle
+            PeaksAngle[tmp] = 2 * self.MinAngle - PeaksAngle[tmp]
             tmp = PeaksTau > self.MaxTau
             PeaksTau[tmp] = 2 * self.MaxTau - PeaksTau[tmp]
             tmp = PeaksTau < self.MinTau
@@ -157,7 +159,7 @@ class GMPB(Basic_Problem):
         output = np.eye(self.dim)
         tmp = np.random.permutation(PageNumber)
         for i in range(PageNumber):
-            output *= X[:, :, tmp[i]]
+            output = output @ X[:, :, tmp[i]]
         return output
 
     def fitness(self, X):
@@ -168,12 +170,12 @@ class GMPB(Basic_Problem):
             b_X = self.RotationMatrix[self.Environmentcounter][:, :, k] @ (x - self.PeaksPosition[k, :, self.Environmentcounter].T)
             tau = self.tau[self.Environmentcounter, k]
             eta = self.eta[k, :, self.Environmentcounter]
-            a = self.Transfrom(a_X, tau, eta)
-            b = self.Transfrom(b_X, tau, eta)
+            a = self.Transform(a_X, tau, eta)
+            b = self.Transform(b_X, tau, eta)
             f[k] = self.PeaksHeight[self.Environmentcounter, k] - np.sqrt(a @ np.diag(self.PeaksWidth[k, :, self.Environmentcounter]) @ b)
         return np.max(f)
 
-    def Transfrom(self, X, tau, eta):
+    def Transform(self, X, tau, eta):
         Y = X.copy()
         tmp = X > 0
         Y[tmp] = np.log(X[tmp])
