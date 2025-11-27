@@ -71,7 +71,7 @@ class mCMAES(Basic_Optimizer):
         # Sub-population movement
         for i in range(self.SwarmNumber):
             # Generate and evaluate Optimizer.lambda offspring
-            arx = self.pop[i]['X'] + self.pop[i]['sigma'] * (self.pop[i]['B'] @ (self.pop[i]['D'] * np.random.randn(self.dim, self.lamb)))
+            arx = self.pop[i]['X'] + self.pop[i]['sigma'] * (self.pop[i]['B'] @ (self.pop[i]['D'].reshape(self.dim, -1) * np.random.randn(self.dim, self.lamb)))
             mask = arx > self.ub
             arx[mask] = 2 * self.ub - arx[mask]
             mask2 = mask & (arx < self.lb)
