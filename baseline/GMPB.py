@@ -172,7 +172,9 @@ class GMPB(Basic_Problem):
             eta = self.eta[k, :, self.Environmentcounter]
             a = self.Transform(a_X, tau, eta)
             b = self.Transform(b_X, tau, eta)
-            f[k] = self.PeaksHeight[self.Environmentcounter, k] - np.sqrt(a @ np.diag(self.PeaksWidth[k, :, self.Environmentcounter]) @ b)
+            val = float(a @ np.diag(self.PeaksWidth[k, :, self.Environmentcounter]) @ b)
+            val = max(val, 0.0)
+            f[k] = self.PeaksHeight[self.Environmentcounter, k] - np.sqrt(val)
         return np.max(f)
 
     def Transform(self, X, tau, eta):
