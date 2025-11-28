@@ -21,6 +21,7 @@ class Sub_Problem_Weight:
         self.pos = np.random.randint(self.n_problem)
         self.fes_thresholds = np.sort(self.rates * self.maxfes)
         self.fes_process = -1
+        self.change_flag = 0
 
     def cal_weight(self, ps: int, curr_fes: int, cost_fes, change_flag=False):  # weight_matrix: (batch_size,ps,n_problem)
         batch_size = cost_fes // ps
@@ -29,6 +30,8 @@ class Sub_Problem_Weight:
         total_process = np.searchsorted(self.fes_thresholds, total_fes, side='right') - 1  # (batch_size*ps,)
         old_process = np.r_[self.fes_process, total_process[:-1]]
         update_mask = (total_process > old_process).astype(int)  # (batch_size*ps,)
+        if np.sum(update_mask) > 0:
+            self.change_flag = 1
         pos_matrix = ((self.pos + np.cumsum(update_mask)) % self.n_problem).reshape(batch_size, ps)
         weight_matrix = np.zeros((batch_size, ps, self.n_problem))
         weight_matrix[np.arange(batch_size)[:, None], np.arange(ps), pos_matrix] = 1

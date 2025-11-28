@@ -4,7 +4,7 @@ Li, Fei, et al.
        Expert Systems with Applications 236 (2024): 121254.
 paper: https://www.sciencedirect.com/science/article/pii/S0957417423017566
 source: https://github.com/EvoMindLab/EDOLAB/tree/main/Algorithm/DPCPSO
-GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np
@@ -25,7 +25,7 @@ class DPCPSO(Basic_Optimizer):
         self.ConvergenceThreshold = 0.1
         self.QuantumNumber = 5
 
-        self.avg_dist= 0
+        self.avg_dist = 0
 
     def __str__(self):
         return "DPCPSO"
@@ -105,9 +105,9 @@ class DPCPSO(Basic_Optimizer):
             'Shifts': None,
             'FitnessValue': None,
             'PbestPosition': None,
-            'IsConverged': None,
+            'IsConverged': 0,
             'StagnationCounter': None,
-            'IsStagnated': None,
+            'IsStagnated': 0,
             'PbestValue': None,
             'GbestValue': None,
             'GbestID': None,
@@ -115,7 +115,8 @@ class DPCPSO(Basic_Optimizer):
             'Center': None,
             'InitRadius': None,
             'CurrentRadius': None,
-            'IsExcluded': None
+            'IsExcluded': 0,
+            'localIter': 0
         }
         Swarm = [copy.deepcopy(population) for _ in range(len(SubPops))]
         for i in range(len(SubPops)):
@@ -136,22 +137,17 @@ class DPCPSO(Basic_Optimizer):
             Swarm[i]['Velocity'] = -4 + 8 * np.random.rand(current_pop.shape[0], self.dim)
             if current_fitness is not None:
                 Swarm[i]['FitnessValue'] = current_fitness
-                current_fitness = None
             else:
                 Swarm[i]['FitnessValue'] = problem.eval(Swarm[i]['X'])
                 if problem.avg_dist:
                     self.avg_dist += problem.avg_dist
             Swarm[i]['PbestPosition'] = current_pop.copy()
             Swarm[i]['PbestValue'] = Swarm[i]['FitnessValue'].copy()
-            Swarm[i]['IsConverged'] = 0
-            Swarm[i]['IsStagnated'] = 0
-            Swarm[i]['IsExcluded'] = 0
-            Swarm[i]['localIter'] = 0
             Swarm[i]['StagnationCounter'] = np.zeros(current_pop.shape[0])
             best_idx = np.argmax(Swarm[i]['PbestValue'])
             Swarm[i]['GbestID'] = best_idx
-            Swarm[i]['GbestPosition'] = Swarm[i]['PbestPosition'][best_idx, :]
-            Swarm[i]['GbestValue'] = Swarm[i]['PbestValue'][best_idx]
+            Swarm[i]['GbestPosition'] = Swarm[i]['PbestPosition'][best_idx, :].copy()
+            Swarm[i]['GbestValue'] = Swarm[i]['PbestValue'][best_idx].copy()
         return Swarm
 
     def iterative_components(self, problem):
@@ -188,18 +184,19 @@ class DPCPSO(Basic_Optimizer):
                 self.pop[i]['GbestValue'] = self.pop[i]['PbestValue'][BestPbestID]
                 self.pop[i]['GbestPosition'] = self.pop[i]['PbestPosition'][BestPbestID]
                 self.pop[i]['GbestID'] = BestPbestID
-            reintialize_mask = self.pop[i]['StagnationCounter'] >= self.StagnationThreshold
-            num_reinit = reintialize_mask.sum()
-            self.pop[i]['X'][reintialize_mask] = self.lb + (self.ub - self.lb) * np.random.rand(num_reinit, self.dim)
-            self.pop[i]['Velocity'][reintialize_mask] = -4 + 8 * np.random.rand(num_reinit, self.dim)
-            self.pop[i]['StagnationCounter'][reintialize_mask] = 0
-            self.pop[i]['FitnessValue'][reintialize_mask] = problem.eval(self.pop[i]['X'][reintialize_mask])
-            if problem.avg_dist:
-                self.avg_dist += problem.avg_dist
-            if problem.RecentChange:
-                return
-            self.pop[i]['PbestValue'][reintialize_mask] = self.pop[i]['FitnessValue'][reintialize_mask].copy()
-            self.pop[i]['PbestPosition'][reintialize_mask] = self.pop[i]['X'][reintialize_mask].copy()
+            # Reinitialize stagnant particles if stagnation exceeds the threshold
+            for j in range(self.pop[i]['X'].shape[0]):
+                if self.pop[i]['StagnationCounter'][j] >= self.StagnationThreshold:
+                    self.pop[i]['X'][j] = self.lb + (self.ub - self.lb) * np.random.rand(self.dim)
+                    self.pop[i]['Velocity'][j] = -4 + 8 * np.random.rand(self.dim)
+                    self.pop[i]['StagnationCounter'][j] = 0
+                    self.pop[i]['FitnessValue'][j] = problem.eval(self.pop[i]['X'][j]).item()
+                    if problem.avg_dist:
+                        self.avg_dist += problem.avg_dist
+                    if problem.RecentChange:
+                        return
+                    self.pop[i]['PbestValue'][j] = self.pop[i]['FitnessValue'][j].copy()
+                    self.pop[i]['PbestPosition'][j] = self.pop[i]['X'][j].copy()
         # Exclusion Mechanism: Prevent multiple sub-populations from exploring the same peak
         toExclude = []
         for i in range(self.SwarmNumber - 1):
@@ -238,8 +235,11 @@ class DPCPSO(Basic_Optimizer):
         # Convergence Detection: Check if sub-populations have converged
         for i in range(self.SwarmNumber):
             center = np.mean(self.pop[i]['PbestPosition'], axis=0)
-            distances = np.linalg.norm(self.pop[i]['PbestPosition'] - center, axis=1)
-            radius = np.mean(distances)
+            total_dist = 0
+            num_particles = self.pop[i]['X'].shape[0]
+            for j in range(num_particles):
+                total_dist += np.linalg.norm(self.pop[i]['PbestPosition'][j] - center)
+            radius = total_dist / num_particles
             if radius < self.ConvergenceThreshold:
                 self.pop[i]['IsConverged'] = 1
             else:
@@ -348,7 +348,7 @@ class DPCPSO(Basic_Optimizer):
                     self.avg_dist += problem.avg_dist
                 bestIdx = np.argmax(alltryFitness)
                 if alltryFitness[bestIdx] > tryBestValue:
-                    tryBestPosition = tryPosition[bestIdx, :]
+                    tryBestPosition = tryPosition[bestIdx, :].copy()
                     tryBestValue = alltryFitness[bestIdx]
             new_X[i, :] = tryBestPosition
             new_fitness[i] = tryBestValue
@@ -357,8 +357,7 @@ class DPCPSO(Basic_Optimizer):
         N = self.ps
         n = self.SwarmNumber
         new_X[n:, :] = self.lb + (self.ub - self.lb) * np.random.rand(N - n, self.dim)
-        Swarm = self.sub_population_generator(new_X, problem)
-        self.pop = Swarm
+        self.pop = self.sub_population_generator(new_X, problem)
         self.SwarmNumber = len(self.pop)
         self.ExclusionRadius = 0.5 * ((self.ub - self.lb) / (self.SwarmNumber ** (1 / self.dim)))
 

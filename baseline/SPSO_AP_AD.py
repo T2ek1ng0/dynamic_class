@@ -4,7 +4,7 @@ Delaram Yazdani et al.,
         ACM Transactions on Evolutionary Learning and Optimization, 2023.
 paper: https://dl.acm.org/doi/10.1145/3604812
 source: https://github.com/EvoMindLab/EDOLAB/tree/main/Algorithm/SPSO_AP_AD
-最大化优化
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np
@@ -88,7 +88,7 @@ class SPSO_AP_AD(Basic_Optimizer):
             'member': [],
             'remove': 0,
             'Active': 1,
-            'distance': None
+            'distance': np.nan
         }
         Species_list = []
         for j in range(len(self.Particle)):
@@ -105,13 +105,10 @@ class SPSO_AP_AD(Basic_Optimizer):
                 valid_count = np.sum(~np.isnan(PopList))
                 species_size = min(self.SwarmMember - 1, valid_count)
                 for i in range(species_size):
-                    neighbor_idx = SortDistance[i]
-                    species['member'].append(neighbor_idx)
-                    self.Particle[neighbor_idx]['Processed'] = 1
+                    species['member'].append(SortDistance[i])
+                    self.Particle[SortDistance[i]]['Processed'] = 1
                 if species_size > 0:
                     species['distance'] = np.max(PopList[SortDistance[:species_size]])
-                else:
-                    species['distance'] = 0.0
                 Species_list.append(species)
         return Species_list
 
@@ -233,7 +230,7 @@ class SPSO_AP_AD(Basic_Optimizer):
         # determine trackers
         self.tracker = []
         for i in range(len(self.Species)):
-            if self.Species[i]['distance'] < self.teta:
+            if not np.isnan(self.Species[i]['distance']) and self.Species[i]['distance'] < self.teta:
                 self.tracker.append(i)
         # Updating shift severity
         dummy = np.full(len(self.tracker), np.nan)

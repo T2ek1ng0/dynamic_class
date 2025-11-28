@@ -4,7 +4,7 @@ Danial Yazdani et al.,
         IEEE Transactions on Cybernetics, vol. 52(7), pp. 6476 - 6489, 2020.
 paper: https://ieeexplore.ieee.org/document/9284465
 source: https://github.com/EvoMindLab/EDOLAB/tree/main/Algorithm/ACFPSO
-GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np

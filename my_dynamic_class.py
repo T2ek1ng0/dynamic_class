@@ -1,7 +1,7 @@
 import numpy as np
 from typing import Union
-from my_weight import Sub_Problem_Weight
-from my_noise import Gaussian_noise
+from dynamic_class.my_weight import Sub_Problem_Weight
+from dynamic_class.my_noise import Gaussian_noise
 from metaevobox.environment.problem.basic_problem import Basic_Problem
 
 class Dynamic_Problem:
@@ -43,6 +43,9 @@ class Dynamic_Problem:
             self.ub = self.problem_list[self.population_weight.pos].ub
             self.lb = self.problem_list[self.population_weight.pos].lb
             self.optimum = [problem.optimum for problem in self.problem_list]
+            self.RecentChange = self.population_weight.change_flag = 0
+            self.Environmentcounter = 0
+            self.EnvironmentNumber = 1
             for problem in self.problem_list:
                 self.dim = max(self.dim, problem.dim)
         else:
@@ -66,6 +69,10 @@ class Dynamic_Problem:
             self.optimum = self.problem_list[self.population_weight.pos].optimum
             fitness = np.stack([problem.func(np.clip(x[:, :problem.dim], problem.lb, problem.ub)) for problem in self.problem_list], axis=1)  # (ps,n_problem)
             result = np.sum(weights * fitness, axis=1)
+            self.RecentChange = self.population_weight.change_flag
+            if self.RecentChange:
+                self.Environmentcounter += 1
+                self.EnvironmentNumber += 1
             self.record_dist(ps, result, weights)
         else:
             result = self.problem_list.func(np.clip(x[:, :self.dim], self.lb, self.ub))
@@ -81,6 +88,9 @@ class Dynamic_Problem:
             self.avg_dist = np.sum(result - np.sum(np.array(self.optimum).reshape(1, -1) * weights, axis=1)) / self.maxfes
         else:
             self.avg_dist = np.sum(result - np.full(ps, self.optimum)) / self.maxfes
+
+    def reset_RecentChange(self):
+        self.RecentChange = self.population_weight.change_flag = 0
 
 
 

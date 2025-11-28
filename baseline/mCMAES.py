@@ -4,7 +4,7 @@ Danial Yazdani et al.,
         IEEE Transactions on Evolutionary Computation, vol. 24(1), pp. 1 - 15, 2019.
 paper: https://ieeexplore.ieee.org/document/8657680
 source: https://github.com/EvoMindLab/EDOLAB/blob/main/Algorithm/mCMAES
-GMPB是最大化优化，如果做最小化优化的话给eval值加负号?
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np

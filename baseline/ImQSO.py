@@ -4,7 +4,7 @@ Javidan Kazemi Kordestani et al.,
         Connection Science, pp. 1-25, 2019.
 paper: https://www.tandfonline.com/doi/full/10.1080/09540091.2019.1700912
 source: https://github.com/EvoMindLab/EDOLAB/blob/main/Algorithm/ImQSO
-GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np

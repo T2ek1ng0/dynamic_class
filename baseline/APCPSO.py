@@ -4,7 +4,7 @@ Liu, Yuanchao, et al.
         Knowledge-Based Systems 195 (2020): 105711.
 paper: https://www.sciencedirect.com/science/article/pii/S0950705120301362
 source: https://github.com/EvoMindLab/EDOLAB/tree/main/Algorithm/APCPSO
-GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np

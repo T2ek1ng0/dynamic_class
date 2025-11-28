@@ -4,7 +4,7 @@ Signorelli, Federico, and Anil Yaman.
         arXiv:2505.11634 (2025).
 paper: https://arxiv.org/abs/2505.11634
 source: https://github.com/FreddyDeWatersir/PSPSO
-GMPB是最大化优化，如果做最小化优化的话有几个argmax和>要改
+最大化优化，如果做最小化的话eval值取反
 """
 from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np
