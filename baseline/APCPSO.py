@@ -10,6 +10,7 @@ from metaevobox.environment.optimizer.basic_optimizer import Basic_Optimizer
 import numpy as np
 from scipy.spatial.distance import cdist, pdist, squareform
 import copy
+from sklearn.cluster import AffinityPropagation
 
 class APCPSO(Basic_Optimizer):
     def __init__(self, config):
@@ -76,6 +77,7 @@ class APCPSO(Basic_Optimizer):
             Swarm[k]['GbestID'] = best_idx
         return Swarm
 
+    '''
     def AffinityPropagationClustering(self, pop):
         # Clustering Function (Modified for Affinity Propagation)
         lamb = 0.5
@@ -144,6 +146,16 @@ class APCPSO(Basic_Optimizer):
             SubPopulations = [pop]
             Centers = np.mean(pop, axis=0)
         return SubPopulations, Centers
+    '''
+
+    def AffinityPropagationClustering(self, pop):
+        ap = AffinityPropagation(affinity='euclidean', damping=0.5, max_iter=200, convergence_iter=50)
+        ap.fit(pop)
+        labels = ap.labels_
+        unique_labels = np.unique(labels)
+        SubPops = [pop[labels == k] for k in unique_labels]
+        Centers = ap.cluster_centers_
+        return SubPops, Centers
 
     def iterative_components(self, problem):
         # PSO Local Search Update for Each Sub-Population
@@ -309,7 +321,7 @@ class APCPSO(Basic_Optimizer):
                     self.avg_dist += problem.avg_dist
                 if tempTryFitness > tryBestValue:
                     tryBestPositon = tempTryPosition
-                    tryBestValue = tempTryFitness
+                    tryBestValue = tempTryFitness.item()
                 else:
                     tempTryPosition[j] -= np.random.rand()
                     tempTryPosition = np.clip(tempTryPosition, self.lb, self.ub)
@@ -318,7 +330,7 @@ class APCPSO(Basic_Optimizer):
                         self.avg_dist += problem.avg_dist
                     if tempTryFitness > tryBestValue:
                         tryBestPositon = tempTryPosition
-                        tryBestValue = tempTryFitness
+                        tryBestValue = tempTryFitness.item()
             new_X[i, :] = tryBestPositon
             new_fitness[i] = tryBestValue
         # 2. Diversity Maintenance
