@@ -18,8 +18,8 @@ class Dynamic_Problem:
         self.fes = 0
         self.maxfes = max_fes
         self.avg_dist = None
-        self.RecentChange = 0  # 兼容baseline用的
-        self.EnvironmentNumber = 1  # 同上
+        self.RecentChange = 1
+        self.EnvironmentNumber = int(2e5)  # 随便开的
         self.Environmentcounter = 0  # 同上
         if self.population_weight:
             self.ub = self.problem_list[self.population_weight.pos].ub
@@ -43,9 +43,9 @@ class Dynamic_Problem:
             self.ub = self.problem_list[self.population_weight.pos].ub
             self.lb = self.problem_list[self.population_weight.pos].lb
             self.optimum = [problem.optimum for problem in self.problem_list]
-            self.RecentChange = self.population_weight.change_flag = 0
+            #self.RecentChange = self.population_weight.change_flag = 0
             self.Environmentcounter = 0
-            self.EnvironmentNumber = 1
+            self.EnvironmentNumber = int(1e5)  # 随便开的
             for problem in self.problem_list:
                 self.dim = max(self.dim, problem.dim)
         else:
@@ -69,10 +69,9 @@ class Dynamic_Problem:
             self.optimum = self.problem_list[self.population_weight.pos].optimum
             fitness = np.stack([problem.func(np.clip(x[:, :problem.dim], problem.lb, problem.ub)) for problem in self.problem_list], axis=1)  # (ps,n_problem)
             result = np.sum(weights * fitness, axis=1)
-            self.RecentChange = self.population_weight.change_flag
+            #self.RecentChange = self.population_weight.change_flag
             if self.RecentChange:
                 self.Environmentcounter += 1
-                self.EnvironmentNumber += 1
             self.record_dist(ps, result, weights)
         else:
             result = self.problem_list.func(np.clip(x[:, :self.dim], self.lb, self.ub))
@@ -90,7 +89,8 @@ class Dynamic_Problem:
             self.avg_dist = np.sum(result - np.full(ps, self.optimum)) / self.maxfes
 
     def reset_RecentChange(self):
-        self.RecentChange = self.population_weight.change_flag = 0
+        #self.RecentChange = self.population_weight.change_flag = 0
+        pass
 
 
 
