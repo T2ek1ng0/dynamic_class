@@ -66,7 +66,7 @@ class Dynamic_Problem:
             weights = self.population_weight.cal_weight(ps, self.fes, ps, change_flag=True)  # (ps,n_problem)
             self.ub = self.problem_list[self.population_weight.pos].ub
             self.lb = self.problem_list[self.population_weight.pos].lb
-            self.optimum = self.problem_list[self.population_weight.pos].optimum
+            #self.optimum = self.problem_list[self.population_weight.pos].optimum
             fitness = np.stack([problem.func(np.clip(x[:, :problem.dim], problem.lb, problem.ub)) for problem in self.problem_list], axis=1)  # (ps,n_problem)
             result = np.sum(weights * fitness, axis=1)
             #self.RecentChange = self.population_weight.change_flag
