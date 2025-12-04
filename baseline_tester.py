@@ -5,6 +5,10 @@ from dynamic_class.baseline.PSPSO import PSPSO
 from dynamic_class.baseline.ACFPSO import ACFPSO
 from dynamic_class.baseline.mCMAES import mCMAES
 from dynamic_class.baseline.mDE import mDE
+from dynamic_class.baseline.APCPSO import APCPSO
+from dynamic_class.baseline.DPCPSO import DPCPSO
+from dynamic_class.baseline.DynDE import DynDE
+from dynamic_class.gleet_optimizer import GLEET_Optimizer
 from dynamic_class.fixedact_nbnc_optimizer import basic_nbnc_Optimizer
 
 # specify your configuration
@@ -20,11 +24,19 @@ config = {
     'test_parallel_mode': 'Serial',  # 'Full', 'Baseline_Problem', 'Problem_Testrun', 'Batch', 'Serial'
     'test_run': 10,
     'baselines': {
+        'NBNC-GLEET': {
+                    'agent': 'GLEET',
+                    'optimizer': GLEET_Optimizer,
+                    'model_load_path': r"agent_model\train\GLEET\20251115T233316_dynamic-problem_easy\checkpoint-10.pkl",
+                },
+        'NBNC': {'optimizer': basic_nbnc_Optimizer},
         'PSPSO': {'optimizer': PSPSO},
         'ACFPSO': {'optimizer': ACFPSO},
         'mCMAES': {'optimizer': mCMAES},
         'mDE': {'optimizer': mDE},
-        'NBNC-PSO': {'optimizer': basic_nbnc_Optimizer},
+        'APCPSO': {'optimizer': APCPSO},
+        'DPCPSO': {'optimizer': DPCPSO},
+        'DynDE': {'optimizer': DynDE},
     },
 }
 config = Config(config)
